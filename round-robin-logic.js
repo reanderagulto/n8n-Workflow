@@ -1,3 +1,12 @@
+function slugify(str) {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 const form = $("Validated Formstack Data").first().json;
 const row = $("Get Round Robin Index").first()?.json ?? {};
 const currentIndex = Number(row.currentIndex ?? 0);
@@ -10,18 +19,16 @@ const USERS = {
 
 // Routing
 const ROUTES = {
-  "Business Registration": [USERS.user1, USERS.user2, USERS.user3],
-
-  "Virtual Office": [USERS.user1, USERS.user2, USERS.user3],
-
-  Coworking: [USERS.user2, USERS.user3],
+  "business-registration": [USERS.user1, USERS.user2, USERS.user3],
+  "virtual-office": [USERS.user1, USERS.user2, USERS.user3],
+  coworking: [USERS.user2, USERS.user3],
 };
 
 // Default routing
 const DEFAULT_POOL = [USERS.user1, USERS.user2, USERS.user3];
 
 // Get the matching pool
-const pool = ROUTES[form.service] ?? DEFAULT_POOL;
+const pool = ROUTES[slugify(form.service)] ?? DEFAULT_POOL;
 
 // Pick assignee
 const assignedUser = pool[currentIndex % pool.length];
