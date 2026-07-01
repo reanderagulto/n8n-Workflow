@@ -15,13 +15,14 @@ const USERS = {
   user1: "U0BD0QGKLRG",
   user2: "U0BD4FKB50C",
   user3: "U0BE4L71NBA",
+  user4: "U0BE84QH6JZ",
 };
 
 // Routing
 const ROUTES = {
-  "business-registration": [USERS.user1, USERS.user2, USERS.user3],
-  "virtual-office": [USERS.user1, USERS.user2, USERS.user3],
-  coworking: [USERS.user2, USERS.user3],
+  "business-registration": [USERS.user1, USERS.user2],
+  "virtual-office": [USERS.user1, USERS.user2],
+  coworking: [USERS.user3, USERS.user4],
 };
 
 // Default routing
