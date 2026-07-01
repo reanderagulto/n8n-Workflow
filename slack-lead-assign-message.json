@@ -1,0 +1,7 @@
+{
+  "channel": "{{ $json.channel }}",
+  "thread_ts": "{{ $json.ts }}",
+  "text": "{{ `<@${$('Lead Assignment Logic').item.json.assignedUser}> A new lead has been assigned to you.` }}",
+  "username": "Loft Leads Bot",
+  "icon_url": "https://cdn.agentimagehosting.com/loftph/2020/09/favicon.png"
+}
