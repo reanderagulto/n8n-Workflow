@@ -3,45 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://slack.com/api/chat.postMessage",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"channel\": \"C0BDWTAEFKJ\",\n  \"text\": \"Source: Loft - {{ $json.service }}\\nFirst Name: {{ $json.firstName }}\\nLast Name: {{ $json.lastName }}\\nEmail: {{ $json.email }}\\nPhone: {{ $json.phone }}\\nMessage: {{ $json.message }}\",\n  \"username\": \"Loft - {{ $json.service }}\",\n  \"icon_url\": \"https://cdn.agentimagehosting.com/loftph/2020/09/favicon.png\"\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        -368,
-        -224
-      ],
-      "id": "a40ef4dd-cede-45f0-8e32-eb7f43f899ec",
-      "name": "HTTP Request",
-      "credentials": {
-        "httpBearerAuth": {
-          "id": "F4wDTmoyTtdcsny8",
-          "name": "Personal Slack Account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Get the Slack response from the previous node\nconst slack = $input.first().json;\n\n// Get the Formstack data.\n// Replace \"Extract Formstack Data\" with the actual name of your node.\nconst form = $(\"Validated Formstack Data\").first().json;\n\n// Current round robin index.\n// Load this from a Data Store before this Code node.\nconst currentIndex = Number(form.currentIndex ?? 0);\n\n// Slack User IDs\nconst USERS = {\n  user1: \"U0BD0QGKLRG\",\n  user2: \"U0BD4FKB50C\",\n  user3: \"U0BE4L71NBA\",\n};\n\n// Routing\nconst ROUTES = {\n  \"Business Registration\": [USERS.user1, USERS.user2, USERS.user3],\n\n  \"Virtual Office\": [USERS.user1, USERS.user2, USERS.user3],\n\n  Coworking: [USERS.user2, USERS.user3],\n};\n\n// Default routing\nconst DEFAULT_POOL = [USERS.user1, USERS.user2, USERS.user3];\n\n// Get the matching pool\nconst pool = ROUTES[form.service] ?? DEFAULT_POOL;\n\n// Pick assignee\nconst assignedUser = pool[currentIndex % pool.length];\n\n// Calculate next index\nconst nextIndex = (currentIndex + 1) % pool.length;\n\nreturn [\n  {\n    json: {\n      // Slack values\n      channel: slack.channel,\n      thread_ts: slack.ts,\n\n      // Assignment\n      assignedUser,\n      slackMention: `<@${assignedUser}>`,\n      service: form.service,\n\n      // Save this back to your Data Store\n      currentIndex,\n      nextIndex,\n    },\n  },\n];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -144,
-        -224
-      ],
-      "id": "774be4dd-bd23-497c-aaca-5f26dae41cd5",
-      "name": "Code in JavaScript"
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "lead",
         "options": {}
@@ -49,10 +10,7 @@
       "name": "Formstack Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        -816,
-        -224
-      ],
+      "position": [-880, -320],
       "id": "1dea4fe8-1063-4b90-abbd-14426dff13e7",
       "webhookId": "73a277dc-de57-4613-9dfb-ad7541d0bf7d"
     },
@@ -63,10 +21,7 @@
       "name": "Validated Formstack Data",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [
-        -592,
-        -224
-      ],
+      "position": [-656, -320],
       "id": "25fe84e7-3ec4-43af-9fea-720043ee7f06"
     },
     {
@@ -77,38 +32,141 @@
         "genericAuthType": "httpBearerAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"channel\": \"{{ $json.channel }}\",\n  \"thread_ts\": \"{{ $json.thread_ts }}\",\n  \"text\": \"{{ `<@${$json.assignedUser}> A new lead has been assigned to you.` }}\",\n  \"username\": \"Loft Leads Bot\",\n  \"icon_url\": \"https://cdn.agentimagehosting.com/loftph/2020/09/favicon.png\"\n}\n",
+        "jsonBody": "={\n  \"channel\": \"{{ $json.channel }}\",\n  \"thread_ts\": \"{{ $json.ts }}\",\n  \"text\": \"{{ `<@${$('Lead Assignment Logic').item.json.assignedUser}> A new lead has been assigned to you.` }}\",\n  \"username\": \"Loft Leads Bot\",\n  \"icon_url\": \"https://cdn.agentimagehosting.com/loftph/2020/09/favicon.png\"\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [
-        80,
-        -224
-      ],
+      "position": [464, -320],
       "id": "216d72a3-0719-4674-8563-c3c4ee72d32e",
-      "name": "HTTP Request1",
+      "name": "Slack Lead Assignment",
       "credentials": {
         "httpBearerAuth": {
           "id": "F4wDTmoyTtdcsny8",
           "name": "Personal Slack Account"
         }
       }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": {{ JSON.stringify($('Lead Assignment Logic').item.json.channel) }},\n  \"text\": {{ JSON.stringify(\n    \"Source: Loft - \" + $('Lead Assignment Logic').item.json.service + \"\\n\" +\n    \"First Name: \" + $('Lead Assignment Logic').item.json.firstName + \"\\n\" +\n    \"Last Name: \" + $('Lead Assignment Logic').item.json.lastName + \"\\n\" +\n    \"Email: \" + $('Lead Assignment Logic').item.json.email + \"\\n\" +\n    \"Phone: \" + $('Lead Assignment Logic').item.json.phone + \"\\n\" +\n    \"Message: \" + $('Lead Assignment Logic').item.json.message\n  ) }},\n  \"username\": {{ JSON.stringify(\"Loft - \" + $('Lead Assignment Logic').item.json.service) }},\n  \"icon_url\": \"https://cdn.agentimagehosting.com/loftph/2020/09/favicon.png\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [240, -320],
+      "id": "a40ef4dd-cede-45f0-8e32-eb7f43f899ec",
+      "name": "Slack Initial Message",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "F4wDTmoyTtdcsny8",
+          "name": "Personal Slack Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "9AZrIsXY3FJuceXG",
+          "mode": "list",
+          "cachedResultName": "Loft - Round Robin Data",
+          "cachedResultUrl": "/projects/XSKYU1Q7TNR4asMP/datatables/9AZrIsXY3FJuceXG"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "service",
+              "keyValue": "={{ $json.service }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [-432, -320],
+      "id": "18365009-ad5f-48e1-bda4-5d98c7140804",
+      "name": "Get Round Robin Index",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "9AZrIsXY3FJuceXG",
+          "mode": "list",
+          "cachedResultName": "Loft - Round Robin Data",
+          "cachedResultUrl": "/projects/XSKYU1Q7TNR4asMP/datatables/9AZrIsXY3FJuceXG"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "service",
+              "keyValue": "={{ $json.service }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "service": "={{ $json.service }}",
+            "currentIndex": "={{ $json.nextIndex }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "currentIndex",
+              "displayName": "currentIndex",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [16, -320],
+      "id": "2a70ac5c-7dd0-4f4d-924e-f10cb72000ed",
+      "name": "Update Round Robin Index"
+    },
+    {
+      "parameters": {
+        "jsCode": "const form = $(\"Validated Formstack Data\").first().json;\nconst row = $(\"Get Round Robin Index\").first()?.json ?? {};\nconst currentIndex = Number(row.currentIndex ?? 0);\n\nconst USERS = {\n  user1: \"U0BD0QGKLRG\",\n  user2: \"U0BD4FKB50C\",\n  user3: \"U0BE4L71NBA\",\n};\n\n// Routing\nconst ROUTES = {\n  \"Business Registration\": [USERS.user1, USERS.user2, USERS.user3],\n\n  \"Virtual Office\": [USERS.user1, USERS.user2, USERS.user3],\n\n  Coworking: [USERS.user2, USERS.user3],\n};\n\n// Default routing\nconst DEFAULT_POOL = [USERS.user1, USERS.user2, USERS.user3];\n\n// Get the matching pool\nconst pool = ROUTES[form.service] ?? DEFAULT_POOL;\n\n// Pick assignee\nconst assignedUser = pool[currentIndex % pool.length];\n\n// Calculate next index\nconst nextIndex = (currentIndex + 1) % pool.length;\n\nreturn [\n  {\n    json: {\n      // Slack values\n      channel: \"C0BDWTAEFKJ\",\n      firstName: form.firstName,\n      lastName: form.lastName,\n      email: form.email,\n      phone: form.phone,\n      message: form.message,\n\n      // Assignment\n      assignedUser,\n      slackMention: `<@${assignedUser}>`,\n      service: form.service,\n\n      // Save this back to your Data Store\n      currentIndex,\n      nextIndex,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-208, -320],
+      "id": "774be4dd-bd23-497c-aaca-5f26dae41cd5",
+      "name": "Lead Assignment Logic"
     }
   ],
   "pinData": {},
   "connections": {
-    "HTTP Request": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Formstack Webhook": {
       "main": [
         [
@@ -124,18 +182,51 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Get Round Robin Index",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Get Round Robin Index": {
       "main": [
         [
           {
-            "node": "HTTP Request1",
+            "node": "Lead Assignment Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Assignment Logic": {
+      "main": [
+        [
+          {
+            "node": "Update Round Robin Index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Round Robin Index": {
+      "main": [
+        [
+          {
+            "node": "Slack Initial Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Initial Message": {
+      "main": [
+        [
+          {
+            "node": "Slack Lead Assignment",
             "type": "main",
             "index": 0
           }
@@ -149,7 +240,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "2f690e73-3aa9-45b7-94eb-89825501d08a",
+  "versionId": "c159b846-b492-4631-a578-0d0ed967527a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "70c47eb972c415d9e3de72cc9c19784f61305dce31f73f897ecbf9996abe23a6"
@@ -158,10 +249,10 @@
   "id": "NAXooZYA1Nia0Fus",
   "tags": [
     {
-      "name": "test integration",
-      "id": "hHqZ6Iil8HEUXTQT",
       "updatedAt": "2026-06-29T06:42:19.205Z",
-      "createdAt": "2026-06-29T06:42:19.205Z"
+      "createdAt": "2026-06-29T06:42:19.205Z",
+      "id": "hHqZ6Iil8HEUXTQT",
+      "name": "test integration"
     }
   ]
 }
