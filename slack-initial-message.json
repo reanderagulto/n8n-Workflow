@@ -1,7 +1,8 @@
 {
   "channel": {{ JSON.stringify($('Lead Assignment Logic').item.json.channel) }},
   "text": {{ JSON.stringify(
-    "Source: Loft - " + $('Lead Assignment Logic').item.json.service + "\n" +
+    "Lead Source: " + $('Lead Assignment Logic').item.json.source + "\n" +
+    "Page Source: " + $('Lead Assignment Logic').item.json.pageSource + "\n\n" +
     "First Name: " + $('Lead Assignment Logic').item.json.firstName + "\n" +
     "Last Name: " + $('Lead Assignment Logic').item.json.lastName + "\n" +
     "Email: " + $('Lead Assignment Logic').item.json.email + "\n" +
