@@ -1,0 +1,109 @@
+{
+  "name": "Form to Slack + Salesforce",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        432
+      ],
+      "id": "eaab0188-2c1b-4518-934c-3ae5af1b699c",
+      "webhookId": "73a277dc-de57-4613-9dfb-ad7541d0bf7d"
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(item => ({\n  json: item.json.body.data\n}));"
+      },
+      "name": "Validate & Format",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        432
+      ],
+      "id": "dc01df4f-2d5b-401c-bed1-dd41f892f587"
+    },
+    {
+      "parameters": {
+        "text": "=New Lead 🚀\n\nName:  {{ $json.name }}\nEmail: {{ $json.email }}\nPhone: {{ $json.phone }}\nCompany: {{ $json.company }}\nMessage: {{ $json.message }}",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        192,
+        336
+      ],
+      "id": "022830f9-8f3e-4bbb-8549-f877c882dd14",
+      "credentials": {
+        "slackApi": {
+          "id": "kW1ZhAzqdIz7Lgzk",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "name": "Salesforce",
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        192,
+        528
+      ],
+      "id": "04e70cb4-1dac-4f3a-9f56-418ef088d8f1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate & Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Format": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Salesforce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3811c3b9-27e9-49d7-b6ea-e091a6c2b15c",
+  "meta": {
+    "instanceId": "c10f08face8d743269f8f3b194c6d49c1673767ccdc7ca7d22b30652efbaeb84"
+  },
+  "id": "5HVosJF7bUCpaNRM",
+  "tags": []
+}

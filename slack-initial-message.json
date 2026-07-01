@@ -1,0 +1,13 @@
+{
+  "channel": {{ JSON.stringify($('Lead Assignment Logic').item.json.channel) }},
+  "text": {{ JSON.stringify(
+    "Source: Loft - " + $('Lead Assignment Logic').item.json.service + "\n" +
+    "First Name: " + $('Lead Assignment Logic').item.json.firstName + "\n" +
+    "Last Name: " + $('Lead Assignment Logic').item.json.lastName + "\n" +
+    "Email: " + $('Lead Assignment Logic').item.json.email + "\n" +
+    "Phone: " + $('Lead Assignment Logic').item.json.phone + "\n" +
+    "Message: " + $('Lead Assignment Logic').item.json.message
+  ) }},
+  "username": {{ JSON.stringify("Loft - " + $('Lead Assignment Logic').item.json.service) }},
+  "icon_url": "https://cdn.agentimagehosting.com/loftph/2020/09/favicon.png"
+}

@@ -1,0 +1,101 @@
+{
+  "name": "Formstack to Slack (Updated)",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "6483684"
+      },
+      "type": "n8n-nodes-base.formstackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        -224
+      ],
+      "id": "d3fab431-2c61-4efb-85d8-655c4501f1b4",
+      "name": "Formstack Trigger",
+      "webhookId": "1cc43b22-1536-452c-818a-63174a9743db",
+      "credentials": {
+        "formstackApi": {
+          "id": "8tXTTRzycvOCkA2q",
+          "name": "Formstack Marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -160
+      ],
+      "id": "9ebb4bcd-0287-4eeb-ac8c-d8b610418409",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"channel\": \"C0BDWTAEFKJ\",\n  \"text\": \"New Lead 🚀\\nName: {{ $json['First Name'] }}\\nEmail: {{ $json.Email }}\\nPhone: {{ $json['Phone Number'] }}\\nMessage: {{ $json.Message }}\",\n  \"username\": \"Loft - n8n Test\",\n  \"icon_url\": \"https://cdn.agentimagehosting.com/loftph/2020/09/favicon.png\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        -192
+      ],
+      "id": "1b242c5a-eaf2-4e1e-a37f-641027d76e4e",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "bHd7pGF5LV5Fb7w9",
+          "name": "Slack Bot Token"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Formstack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f5ce81b2-8e73-4e34-aaf6-935fb831b623",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c10f08face8d743269f8f3b194c6d49c1673767ccdc7ca7d22b30652efbaeb84"
+  },
+  "id": "1dF7AOW4GpL6qVZ9",
+  "tags": []
+}
